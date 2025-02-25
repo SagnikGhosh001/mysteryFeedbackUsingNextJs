@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { senVerificationEMail } from "@/helpers/sendVerificatonEmail";
 // senVerificationEMail;
 
+
 export async function POST(request: Request) {
   await dbConnect();
 
@@ -71,6 +72,8 @@ export async function POST(request: Request) {
       username,
       verifyCode
     );
+    // console.log(email,username,verifyCode);
+    
     if (!emailResponse.success) {
       return Response.json(
         {
