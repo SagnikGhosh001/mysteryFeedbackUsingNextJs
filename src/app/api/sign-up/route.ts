@@ -1,17 +1,42 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import bcrypt from "bcryptjs";
-
+import { signUpSchema } from "@/schemas/signUpSchema";
 import { senVerificationEMail } from "@/helpers/sendVerificatonEmail";
 // senVerificationEMail;
 
-
 export async function POST(request: Request) {
   await dbConnect();
-
   try {
     const { username, email, password } = await request.json();
+    if (!username || !email || !password) {
+      return Response.json(
+        {
+          success: false,
+          message: "Please provide all fields",
+        },
+        { status: 500 }
+      );
+    }
 
+    const result = signUpSchema.safeParse({ username, email, password });
+    if (!result.success) {
+      const signuperrors = {
+        username: result.error.format().username?._errors.join(", ") || "", // Join errors with comma
+        email: result.error.format().email?._errors.join(", ") || "", // Join errors with comma
+        password: result.error.format().password?._errors.join(", ") || "",
+      };
+      const hasErrors = Object.values(signuperrors).some(
+        (err) => err.length > 0
+      );
+      return Response.json(
+        {
+          success: false,
+          message: hasErrors ? signuperrors : "Please use valid field",
+        },
+        { status: 400 }
+      );
+    }
     const existingUserVerifiedByUsername = await UserModel.findOne({
       username,
       isVerified: true,
@@ -42,10 +67,12 @@ export async function POST(request: Request) {
         );
       } else {
         const hashedpassword = await bcrypt.hash(password, 10);
-        existingUserVerifiedByEmail.password=hashedpassword
-        existingUserVerifiedByEmail.verifyCode=verifyCode
-        existingUserVerifiedByEmail.verifyCodeExpriry=new Date(Date.now()+3600000)
-        await existingUserVerifiedByEmail.save()
+        existingUserVerifiedByEmail.password = hashedpassword;
+        existingUserVerifiedByEmail.verifyCode = verifyCode;
+        existingUserVerifiedByEmail.verifyCodeExpriry = new Date(
+          Date.now() + 3600000
+        );
+        await existingUserVerifiedByEmail.save();
       }
     } else {
       const hashedpassword = await bcrypt.hash(password, 10);
@@ -73,7 +100,7 @@ export async function POST(request: Request) {
       verifyCode
     );
     // console.log(email,username,verifyCode);
-    
+
     if (!emailResponse.success) {
       return Response.json(
         {

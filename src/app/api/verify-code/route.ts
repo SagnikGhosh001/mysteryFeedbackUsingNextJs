@@ -1,12 +1,19 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import { z } from "zod";
 import { verifySchema } from "@/schemas/verifySchema";
 
 export async function POST(request: Request) {
   dbConnect();
   try {
     const { username, code } = await request.json();
+    if(!username||!code){      
+        return Response.json(
+          {
+              success:false,
+              message: 'Please provide all fields'
+          },{status: 500}
+      )
+      }
     const result=verifySchema.safeParse({code})    
     if(!result.success){
         const verifyCodeErrors=result.error.format().code?._errors||[]
