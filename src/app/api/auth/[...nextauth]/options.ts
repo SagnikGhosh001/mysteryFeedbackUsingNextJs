@@ -7,8 +7,6 @@ import UserModel from "@/model/User";
 
 
 export const authOptions: NextAuthOptions = {
-    
-    
   providers: [
     CredentialsProvider({
       id: "credentials",
@@ -19,11 +17,11 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials:any):Promise<any> {
         await dbConnect()
-        try {
+        try {                    
              const user=await UserModel.findOne({
                 $or: [
-                    {email:credentials.identifier.email},
-                    {username:credentials.identifier.username}
+                    {email:credentials.identifier},
+                    {username:credentials.identifier}
                 ]             
             })
             if(!user){

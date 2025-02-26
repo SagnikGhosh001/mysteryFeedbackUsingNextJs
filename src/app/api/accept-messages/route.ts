@@ -60,8 +60,12 @@ export async function POST(request: Request) {
 export async function GET() {
   await dbConnect();
   const session = await getServerSession(authOptions);
+  // console.log('session',session);
+  
   const sessionUser: User = session?.user as User;
+  // console.log('sessionuser',sessionUser);
   if (!session || !session.user)
+  {
     return Response.json(
       {
         sucsess: false,
@@ -69,6 +73,9 @@ export async function GET() {
       },
       { status: 401 }
     );
+
+  }
+    
 
   const userId = sessionUser._id;
   try {
@@ -85,7 +92,7 @@ export async function GET() {
     return Response.json(
       {
         sucsess: true,
-        isAcceptingMessages: foundUser.isAcceptingMessage,
+        isAccesptingMessages: foundUser.isAcceptingMessage,
       },
       { status: 200 }
     );
